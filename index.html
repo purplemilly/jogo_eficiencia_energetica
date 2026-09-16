@@ -194,6 +194,11 @@
             0% { transform: scale(0.5); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
+        /* ----- AQUI ESTÁ O NOVO ESPAÇAMENTO DO TÍTULO ----- */
+        #modal-title {
+            margin-bottom: 25px; /* Aumenta o espaço abaixo do título */
+            font-size: 1.8rem;
+            color: var(--primary);
 
         .modal-body { display: flex; flex-direction: column; gap: 20px; text-align: left; margin-bottom: 25px; }
         
@@ -318,7 +323,7 @@
         <button onclick="location.reload()">Jogar Novamente</button>
     </div>
 <!-- NOVO: Crédito Fixo no rodapé -->
-    <div class="developer-credit">Desenvolvido por: Emilly Dantas                              solicite o gabarito através do email: emillydantas98@gmail.com</div>
+    <div class="developer-credit">Desenvolvido por Emilly Dantas | Solicite o gabarito através do email: emillydantas98@gmail.com</div>
     <script>
         // Array contendo os textos completos e o nome dos arquivos que deves enviar depois.
         const hotspots = [
