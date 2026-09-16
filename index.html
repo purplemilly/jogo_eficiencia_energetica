@@ -128,7 +128,6 @@
 
         .progress { color: var(--accent); font-size: 1.5rem; }
 
-        /* Novo Container para corrigir o alinhamento */
         .game-area {
             position: relative;
             flex-grow: 1;
@@ -146,7 +145,7 @@
 
         #main-img {
             max-width: 100vw;
-            max-height: calc(100vh - 60px); /* Subtrai a altura do cabeçalho */
+            max-height: calc(100vh - 60px);
             display: block;
             cursor: crosshair;
         }
@@ -204,7 +203,7 @@
         .problem-title { color: #c0392b; font-weight: bold; }
         .solution-title { color: var(--secondary); font-weight: bold; }
 
-        /* Tela Final */
+        /* Tela Final e Layout do Resumo com Imagem */
         #end-screen { background: var(--bg); padding: 40px; overflow-y: auto; justify-content: flex-start; }
         .end-header { text-align: center; margin-bottom: 30px; margin-top: 20px; }
         .end-header h1 { color: var(--secondary); font-size: 3rem; margin-bottom: 10px; }
@@ -213,11 +212,44 @@
             margin-bottom: 20px; padding: 20px; background: white;
             border-left: 5px solid var(--accent); border-radius: 8px;
         }
+        
         .summary-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px; width: 100%; max-width: 1200px; margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px; width: 100%; max-width: 1000px; margin-bottom: 40px;
         }
-        .summary-card { background: white; padding: 20px; border-radius: 10px; border-top: 4px solid var(--primary); }
+        
+        /* Estilo do cartão final com layout lado a lado */
+        .summary-card { 
+            display: flex;
+            flex-direction: column;
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            border-top: 4px solid var(--primary);
+            gap: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        @media(min-width: 768px) {
+            .summary-card { flex-direction: row; align-items: flex-start; }
+        }
+
+        .summary-card-img {
+            width: 100%;
+            max-width: 250px;
+            height: 200px;
+            object-fit: cover; /* Mantém a imagem proporcional e sem distorção */
+            border-radius: 8px;
+            border: 2px solid var(--accent);
+            flex-shrink: 0;
+            margin: 0 auto;
+        }
+
+        .summary-card-text { flex-grow: 1; }
+        .summary-card h3 { color: var(--primary); margin-bottom: 15px; font-size: 1.3rem; }
+        .summary-card p { margin-bottom: 10px; line-height: 1.5; font-size: 1rem; }
+
     </style>
 </head>
 <body>
@@ -237,7 +269,6 @@
             <div>Oportunidades: <span class="progress"><span id="found-count">0</span> / 6</span></div>
         </div>
         <div class="game-area">
-            <!-- Camada interativa que resolve o problema de alinhamento -->
             <div id="interactive-wrapper">
                 <img src="image.png" id="main-img" alt="Ambiente">
             </div>
@@ -251,7 +282,7 @@
                 <div class="modal-image-wrapper" id="modal-img-wrapper"></div>
                 <div class="modal-text">
                     <p><span class="problem-title">Problema:</span> <span id="modal-problem"></span></p>
-                    <p><span class="solution-title">Solução:</span> <span id="modal-solution"></span></p>
+                    <p><span class="solution-title">Correção:</span> <span id="modal-solution"></span></p>
                 </div>
             </div>
             <button id="btn-continue">Continuar</button>
@@ -262,25 +293,54 @@
         <div class="end-header">
             <h1>Parabéns, <span id="end-player-name"></span>!</h1>
         </div>
-        <div class="motivation">"A eficiência energética otimiza recursos e constrói uma indústria sustentável."</div>
+        <div class="motivation">"A eficiência energética não é apenas sobre reduzir custos, mas sobre otimizar recursos, proteger o meio ambiente e construir uma indústria inteligente e sustentável para o futuro."</div>
         <div class="summary-grid" id="summary-grid"></div>
         <button onclick="location.reload()">Jogar Novamente</button>
     </div>
 
     <script>
-        // Aumentamos consideravelmente o valor de 'r' (raio de clique) para cobrir os objetos inteiros.
+        // Array contendo os textos completos e o nome dos arquivos que deves enviar depois.
         const hotspots = [
-            { id: 1, title: "Vazamento de Ar Comprimido", x: 21, y: 28, r: 12, problem: "Vapor/ar escapando da tubulação amarela.", solution: "Manutenção preventiva e troca de vedações.", bgPos: "15% 25%" },
-            { id: 2, title: "Ar-Condicionado Acima do Forno", x: 69, y: 14, r: 12, problem: "Ar condicionado sobre fonte extrema de calor.", solution: "Reposicionar o aparelho.", bgPos: "75% 8%" },
-            { id: 3, title: "Exaustor Obstruído", x: 91, y: 22, r: 12, problem: "Ventilação bloqueada por caixas.", solution: "Desobstruir a área.", bgPos: "100% 15%" },
-            { id: 4, title: "Iluminação Desnecessária", x: 42, y: 8, r: 15, problem: "Lâmpadas acesas em áreas ociosas.", solution: "Instalar sensores de presença.", bgPos: "40% 5%" },
-            { id: 5, title: "Painel Elétrico sem Isolamento", x: 89, y: 47, r: 12, problem: "Conexões expostas e pontos quentes.", solution: "Organizar cabeamento e vedar painel.", bgPos: "100% 50%" },
-            { id: 6, title: "Porta de Carga Aberta", x: 57, y: 27, r: 14, problem: "Entrada de calor externo sobrecarregando a climatização.", solution: "Instalar cortinas de ar.", bgPos: "58% 25%" }
+            { 
+                id: 1, x: 21, y: 28, r: 12, bgPos: "15% 25%", customImg: "foto1.jpg",
+                title: "Vazamento de Ar Comprimido (Tubulação Amarela)", 
+                problem: "Localizado na parte centro-esquerda da imagem, onde há vapor/ar escapando de uma junção da tubulação amarela suspensa.", 
+                solution: "Realizar manutenção preventiva, trocar vedações e tubos danificados para eliminar a perda de pressão." 
+            },
+            { 
+                id: 2, x: 69, y: 14, r: 12, bgPos: "75% 8%", customImg: "foto2.jpg",
+                title: "Ar-Condicionado Acima de Fonte de Calor (Forno)", 
+                problem: "Localizado na parte superior direita, o aparelho de ar condicionado está instalado exatamente acima da estação de forno industrial.", 
+                solution: "Reposicionar o aparelho de ar-condicionado para longe de fontes diretas de calor para evitar o esforço excessivo e alto consumo energético do compressor." 
+            },
+            { 
+                id: 3, x: 91, y: 22, r: 12, bgPos: "100% 15%", customImg: "foto3.jpg",
+                title: "Motor/Ventilação Obstruída (Exaustor)", 
+                problem: "Localizado no canto superior direito, o \"EXHAUST FAN\" está bloqueado por caixas empilhadas e desorganizadas.", 
+                solution: "Desobstruir a área ao redor dos ventiladores e exaustores para garantir o fluxo de ar adequado e eficiência térmica do motor." 
+            },
+            { 
+                id: 4, x: 42, y: 8, r: 15, bgPos: "40% 5%", customImg: "foto4.jpg",
+                title: "Iluminação Desnecessária / Em Área Desocupada", 
+                problem: "Cantos da fábrica com lâmpadas acesas em locais onde não há operadores ativos. Localizada na área vazia perto do portão.", 
+                solution: "Instalar sensores de presença ou adotar políticas de desligamento de luzes em zonas ociosas." 
+            },
+            { 
+                id: 5, x: 89, y: 47, r: 12, bgPos: "100% 50%", customImg: "foto5.jpg",
+                title: "Painel Elétrico sem Isolamento / ponto quente nos contactores", 
+                problem: "Fios e conexões descobertas perto das bancadas de solda robótica.", 
+                solution: "Organizar o cabeamento, corrigir pontos quentes e vedar painéis para evitar perdas elétricas e riscos de curto-circuito." 
+            },
+            { 
+                id: 6, x: 57, y: 27, r: 14, bgPos: "58% 25%", customImg: "foto6.jpg",
+                title: "Porta de Carga Aberta (Troca Térmica)", 
+                problem: "A porta dos fundos/cais aberta sem cortisa de ar, permitindo a entrada de calor externo.", 
+                solution: "Instalar portas automáticas de fechamento rápido ou cortinas de ar para manter a climatização interna estável." 
+            }
         ];
 
         let foundItems = [];
         const interactiveWrapper = document.getElementById('interactive-wrapper');
-        const mainImg = document.getElementById('main-img');
 
         document.getElementById('player-name').addEventListener('input', (e) => {
             document.getElementById('btn-start').disabled = e.target.value.trim().length < 2;
@@ -294,17 +354,14 @@
             document.getElementById('game-screen').classList.add('active');
         });
 
-        // O clique agora é registrado no wrapper, que tem o exato tamanho da imagem
         interactiveWrapper.addEventListener('click', (e) => {
             const rect = interactiveWrapper.getBoundingClientRect();
-            // Calcula as coordenadas em % estritamente em cima da imagem renderizada
             const clickX = ((e.clientX - rect.left) / rect.width) * 100;
             const clickY = ((e.clientY - rect.top) / rect.height) * 100;
 
             for (let point of hotspots) {
                 if (foundItems.includes(point.id)) continue;
                 
-                // Distância simples em percentual
                 const ratio = rect.width / rect.height;
                 const dx = (clickX - point.x) * ratio; 
                 const dy = (clickY - point.y);
@@ -318,7 +375,6 @@
                     marker.style.left = point.x + '%';
                     marker.style.top = point.y + '%';
                     
-                    // Tamanho do marcador adaptativo
                     const markerSize = Math.max(50, rect.width * (point.r * 2 / 100) * 0.5); 
                     marker.style.width = markerSize + 'px';
                     marker.style.height = markerSize + 'px';
@@ -348,8 +404,21 @@
                     document.getElementById('end-screen').classList.add('active');
                     
                     const grid = document.getElementById('summary-grid');
+                    grid.innerHTML = ''; // Limpa o grid antes de adicionar
+                    
+                    // Injeta a foto separada (customImg) e o texto no layout da tela final
                     hotspots.forEach(pt => {
-                        grid.innerHTML += `<div class="summary-card"><h3>${pt.title}</h3><p><strong>Problema:</strong> ${pt.problem}</p><p><strong>Solução:</strong> ${pt.solution}</p></div>`;
+                        const card = document.createElement('div');
+                        card.className = 'summary-card';
+                        card.innerHTML = `
+                            <img src="${pt.customImg}" class="summary-card-img" alt="${pt.title}">
+                            <div class="summary-card-text">
+                                <h3>${pt.title}</h3>
+                                <p><strong>Problema:</strong> ${pt.problem}</p>
+                                <p><strong>Correção:</strong> ${pt.solution}</p>
+                            </div>
+                        `;
+                        grid.appendChild(card);
                     });
                 }, 500);
             }
