@@ -201,7 +201,18 @@
             font-size: 1.8rem;
             color: var(--primary);
         }
-
+/* ----- NOVO: ESPAÇAMENTO ENTRE PROBLEMA E CORREÇÃO ----- */
+        .modal-text p {
+            margin-bottom: 20px; /* Define o espaço entre os blocos de texto */
+            line-height: 1.5;    /* Melhora a legibilidade dando espaço entre as linhas do mesmo parágrafo */
+            font-size: 1.05rem;  /* Aumenta muito levemente o tamanho da fonte para melhor leitura */
+        }
+        
+        /* Remove a margem do último parágrafo para não empurrar o botão demasiado para baixo */
+        .modal-text p:last-child {
+            margin-bottom: 0;
+        }
+        
         .modal-body { display: flex; flex-direction: column; gap: 20px; text-align: left; margin-bottom: 25px; }
         
         @media(min-width: 600px) {
