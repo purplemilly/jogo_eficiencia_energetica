@@ -1,0 +1,623 @@
+html_content = """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio: Eficiência Energética na Indústria</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #2c3e50;
+            --secondary: #27ae60;
+            --accent: #f39c12;
+            --bg: #ecf0f1;
+            --text: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: var(--primary);
+            color: var(--text);
+            overflow: hidden; /* Evitar rolagem na tela do jogo */
+        }
+
+        /* Telas */
+        .screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: var(--bg);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        /* Tela Inicial */
+        #start-screen {
+            background: linear-gradient(135deg, rgba(44,62,80,0.9), rgba(44,62,80,0.8)), url('image.png') no-repeat center center;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .title-box {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            border: 2px solid var(--accent);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        p.instructions {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background-color: #219653;
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Tela do Jogo */
+        #game-screen {
+            background-color: #111;
+            display: none;
+            flex-direction: column;
+        }
+
+        #game-screen.active {
+            display: flex;
+        }
+
+        .header {
+            width: 100%;
+            height: 60px;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .progress {
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        .image-container {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #main-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: crosshair;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        /* Marcadores Visuais (Círculos Verdes) */
+        .marker {
+            position: absolute;
+            border: 4px solid var(--secondary);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px var(--secondary), inset 0 0 10px var(--secondary);
+            pointer-events: none;
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        /* Container flexível para alinhar imagem e texto lado a lado em telas grandes */
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        @media(min-width: 600px) {
+            .modal-body {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+
+        .modal-image-wrapper {
+            flex-shrink: 0;
+            width: 200px;
+            height: 200px;
+            border-radius: 8px;
+            border: 3px solid var(--accent);
+            overflow: hidden;
+            margin: 0 auto;
+            background-image: url('image.png');
+            background-size: 500%; /* Dá o efeito de zoom */
+            background-repeat: no-repeat;
+        }
+
+        .modal-text {
+            flex-grow: 1;
+        }
+
+        .modal-text p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .problem-title { color: #c0392b; font-weight: bold; }
+        .solution-title { color: var(--secondary); font-weight: bold; }
+
+        /* Tela Final */
+        #end-screen {
+            background: var(--bg);
+            padding: 40px;
+            overflow-y: auto;
+            justify-content: flex-start;
+        }
+
+        #end-screen.active {
+            display: flex;
+        }
+
+        .end-header {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        .end-header h1 {
+            color: var(--secondary);
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .motivation {
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-left: 5px solid var(--accent);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 40px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 4px solid var(--primary);
+        }
+
+        .summary-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .summary-card p {
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .stats {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            text-align: center;
+            padding-bottom: 40px;
+        }
+
+        .stats span {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- TELA INICIAL -->
+    <div id="start-screen" class="screen active">
+        <div class="title-box">
+            <h1>Desafio: Eficiência Energética</h1>
+            <p class="instructions">
+                A indústria abaixo possui <strong>6 oportunidades</strong> de melhoria em eficiência energética.<br><br>
+                Sua missão é inspecionar o ambiente e clicar nos locais onde há desperdício de energia ou configurações inadequadas.
+            </p>
+            <input type="text" id="player-name" placeholder="Digite seu nome para começar..." autocomplete="off">
+            <button id="btn-start" disabled>JOGAR AGORA</button>
+        </div>
+    </div>
+
+    <!-- TELA DO JOGO -->
+    <div id="game-screen" class="screen">
+        <div class="header">
+            <div id="player-display">Operador: <span></span></div>
+            <div>Oportunidades Encontradas: <span class="progress"><span id="found-count">0</span> / 6</span></div>
+        </div>
+        <div class="image-container" id="image-container">
+            <!-- A imagem principal (substitua 'image.png' se necessário) -->
+            <img src="image.png" id="main-img" alt="Ambiente Industrial">
+        </div>
+    </div>
+
+    <!-- MODAL DE DESCOBERTA -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title">Oportunidade Encontrada!</h2>
+            <div class="modal-body">
+                <!-- Wrapper que usa a própria imagem com background-position para dar zoom, 
+                     pode ser alterado depois para uma tag <img> se usar fotos separadas -->
+                <div class="modal-image-wrapper" id="modal-img-wrapper"></div>
+                <div class="modal-text">
+                    <p><span class="problem-title">Problema:</span> <span id="modal-problem"></span></p>
+                    <p><span class="solution-title">Solução:</span> <span id="modal-solution"></span></p>
+                </div>
+            </div>
+            <button id="btn-continue">Continuar Explorando</button>
+        </div>
+    </div>
+
+    <!-- TELA FINAL -->
+    <div id="end-screen" class="screen">
+        <div class="end-header">
+            <h1>Parabéns, <span id="end-player-name"></span>!</h1>
+            <p style="font-size: 1.2rem; color: #555;">Você encontrou todas as oportunidades de melhoria.</p>
+        </div>
+        
+        <div class="motivation">
+            "A eficiência energética não é apenas sobre reduzir custos, mas sobre otimizar recursos, proteger o meio ambiente e construir uma indústria inteligente e sustentável para o futuro."
+        </div>
+
+        <div class="summary-grid" id="summary-grid">
+            <!-- Cards de resumo serão injetados via JS -->
+        </div>
+
+        <button onclick="location.reload()">Jogar Novamente</button>
+
+        <div class="stats">
+            <br>
+            Pessoas que já completaram o desafio: <span id="global-counter">Carregando...</span>
+        </div>
+    </div>
+
+    <!-- SCRIPTS DO JOGO -->
+    <script>
+        // Configuração dos 6 pontos (Coordenadas X e Y em porcentagem em relação à imagem)
+        // Raio (r) em porcentagem de tolerância do clique.
+        const hotspots = [
+            {
+                id: 1,
+                title: "Vazamento de Ar Comprimido",
+                x: 21, y: 28, r: 6,
+                problem: "Há vapor/ar escapando de uma junção da tubulação amarela suspensa, configurando um vazamento crítico.",
+                solution: "Realizar manutenção preventiva, trocar vedações e tubos danificados para eliminar a perda de pressão e desperdício de energia do compressor.",
+                bgPos: "15% 25%", // Coordenada CSS para o zoom na imagem principal
+                customImg: "foto1.jpg" // Nome do arquivo caso o cliente envie depois
+            },
+            {
+                id: 2,
+                title: "Ar-Condicionado Acima do Forno",
+                x: 69, y: 14, r: 6,
+                problem: "O aparelho de ar condicionado está instalado exatamente acima da estação de forno industrial, uma forte fonte de calor.",
+                solution: "Reposicionar o aparelho para longe de fontes diretas de calor para evitar o esforço excessivo e altíssimo consumo energético do compressor.",
+                bgPos: "75% 8%",
+                customImg: "foto2.jpg"
+            },
+            {
+                id: 3,
+                title: "Exaustor Obstruído",
+                x: 91, y: 22, r: 6,
+                problem: "O sistema de ventilação/exaustor está bloqueado por caixas de papelão empilhadas e desorganizadas.",
+                solution: "Desobstruir a área ao redor dos ventiladores e exaustores para garantir o fluxo de ar adequado e a eficiência térmica do motor.",
+                bgPos: "100% 15%",
+                customImg: "foto3.jpg"
+            },
+            {
+                id: 4,
+                title: "Iluminação em Área Ociosa",
+                x: 42, y: 8, r: 8,
+                problem: "Lâmpadas acesas com forte intensidade em locais sem operadores ativos ou perto de áreas iluminadas naturalmente.",
+                solution: "Instalar sensores de presença, dimerização ou adotar políticas de desligamento de luzes em zonas ociosas.",
+                bgPos: "40% 5%",
+                customImg: "foto4.jpg"
+            },
+            {
+                id: 5,
+                title: "Painel Elétrico sem Isolamento",
+                x: 89, y: 47, r: 6,
+                problem: "Fios e conexões descobertas no painel elétrico aberto, indicando possíveis pontos quentes e fugas.",
+                solution: "Organizar o cabeamento, realizar termografia para corrigir pontos quentes e vedar o painel, evitando perdas elétricas e riscos de curto-circuito.",
+                bgPos: "100% 50%",
+                customImg: "foto5.jpg"
+            },
+            {
+                id: 6,
+                title: "Porta de Carga Aberta",
+                x: 57, y: 27, r: 6,
+                problem: "A porta dos fundos/cais está totalmente aberta sem barreira, permitindo a entrada de calor externo e sobrecarregando a climatização.",
+                solution: "Instalar portas automáticas de fechamento rápido ou cortinas de ar para manter a climatização interna estável.",
+                bgPos: "58% 25%",
+                customImg: "foto6.jpg"
+            }
+        ];
+
+        let playerName = "";
+        let foundItems = [];
+        
+        // Elementos DOM
+        const inputName = document.getElementById('player-name');
+        const btnStart = document.getElementById('btn-start');
+        const screenStart = document.getElementById('start-screen');
+        const screenGame = document.getElementById('game-screen');
+        const screenEnd = document.getElementById('end-screen');
+        const mainImg = document.getElementById('main-img');
+        const imgContainer = document.getElementById('image-container');
+        
+        // Modal
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalProblem = document.getElementById('modal-problem');
+        const modalSolution = document.getElementById('modal-solution');
+        const modalImgWrapper = document.getElementById('modal-img-wrapper');
+        const btnContinue = document.getElementById('btn-continue');
+
+        // Validação de nome
+        inputName.addEventListener('input', (e) => {
+            btnStart.disabled = e.target.value.trim().length < 2;
+        });
+
+        // Iniciar Jogo
+        btnStart.addEventListener('click', () => {
+            playerName = inputName.value.trim();
+            document.querySelector('#player-display span').innerText = playerName;
+            document.getElementById('end-player-name').innerText = playerName;
+            
+            screenStart.classList.remove('active');
+            screenGame.classList.add('active');
+        });
+
+        // Clique na Imagem Principal
+        mainImg.addEventListener('click', (e) => {
+            // Calcular posição X e Y do clique em %
+            const rect = mainImg.getBoundingClientRect();
+            const clickX = ((e.clientX - rect.left) / rect.width) * 100;
+            const clickY = ((e.clientY - rect.top) / rect.height) * 100;
+
+            checkHotspot(clickX, clickY, rect);
+        });
+
+        function checkHotspot(x, y, rect) {
+            for (let point of hotspots) {
+                if (foundItems.includes(point.id)) continue; // Já encontrou este
+
+                // Cálculo de distância simples (Teorema de Pitágoras adaptado para %)
+                // Ajustamos a proporção baseada na proporção da imagem na tela para não achatar o raio
+                const ratio = rect.width / rect.height;
+                const dx = (x - point.x) * ratio; // Ajuste de aspecto
+                const dy = (y - point.y);
+                const distance = Math.sqrt(dx*dx + dy*dy);
+
+                if (distance <= point.r) {
+                    markFound(point, rect);
+                    return;
+                }
+            }
+        }
+
+        function markFound(point, rect) {
+            foundItems.push(point.id);
+            
+            // Criar Marcador Verde na tela
+            const marker = document.createElement('div');
+            marker.className = 'marker';
+            
+            // Posicionar exatamente onde é o centro do hotspot
+            marker.style.left = point.x + '%';
+            marker.style.top = point.y + '%';
+            
+            // O tamanho do marcador pode ser fixo ou baseado no tamanho da tela
+            const markerSize = Math.max(40, rect.width * (point.r * 2 / 100) * 0.5); 
+            marker.style.width = markerSize + 'px';
+            marker.style.height = markerSize + 'px';
+            
+            // Anexar não ao img, mas ao container que envolve a img (que tem position relative)
+            // Precisamos calcular a posição real baseada no tamanho da img dentro do container
+            // Para simplificar e garantir precisão, a img está 100% adaptada, então as % funcionam
+            imgContainer.appendChild(marker);
+
+            // Atualizar Contador
+            document.getElementById('found-count').innerText = foundItems.length;
+
+            // Abrir Modal
+            showModal(point);
+        }
+
+        function showModal(point) {
+            modalTitle.innerText = point.title;
+            modalProblem.innerText = point.problem;
+            modalSolution.innerText = point.solution;
+            
+            /* Lógica para as imagens: 
+               Atualmente usa um recorte via CSS background-position da imagem principal (image.png).
+               Se você subir fotos separadas futuramente, você pode alterar o código abaixo para:
+               modalImgWrapper.style.backgroundImage = `url('${point.customImg}')`;
+               modalImgWrapper.style.backgroundSize = 'cover';
+               modalImgWrapper.style.backgroundPosition = 'center';
+            */
+            modalImgWrapper.style.backgroundPosition = point.bgPos;
+
+            modal.classList.add('active');
+        }
+
+        btnContinue.addEventListener('click', () => {
+            modal.classList.remove('active');
+            
+            // Verifica se terminou
+            if (foundItems.length === hotspots.length) {
+                setTimeout(endGame, 500); // pequeno delay
+            }
+        });
+
+        function endGame() {
+            screenGame.classList.remove('active');
+            screenEnd.classList.add('active');
+
+            // Gerar Resumo
+            const grid = document.getElementById('summary-grid');
+            grid.innerHTML = '';
+            
+            hotspots.forEach(pt => {
+                const card = document.createElement('div');
+                card.className = 'summary-card';
+                card.innerHTML = `
+                    <h3>${pt.title}</h3>
+                    <p><strong>Problema:</strong> ${pt.problem}</p>
+                    <p><strong>Solução:</strong> ${pt.solution}</p>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Registrar Jogador Global (Usando API gratuita CounterAPI)
+            // Usamos um namespace único "energia_ind_game" e key "plays"
+            fetch('https://api.counterapi.dev/v1/energia_ind_game/plays/up')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('global-counter').innerText = data.count;
+                })
+                .catch(err => {
+                    document.getElementById('global-counter').innerText = "Indisponível no momento";
+                });
+        }
+    </script>
+</body>
+</html>
+"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("File index.html generated.")
