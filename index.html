@@ -1,4 +1,4 @@
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -25,10 +25,9 @@ html_content = """<!DOCTYPE html>
         body {
             background-color: var(--primary);
             color: var(--text);
-            overflow: hidden; /* Evitar rolagem na tela do jogo */
+            overflow: hidden; 
         }
 
-        /* Telas */
         .screen {
             display: none;
             width: 100vw;
@@ -61,7 +60,6 @@ html_content = """<!DOCTYPE html>
             border-radius: 15px;
             max-width: 600px;
             border: 2px solid var(--accent);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         h1 {
@@ -95,11 +93,10 @@ html_content = """<!DOCTYPE html>
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+            transition: transform 0.2s;
         }
 
-        button:hover {
+        button:hover:not(:disabled) {
             transform: scale(1.05);
             background-color: #219653;
         }
@@ -107,18 +104,12 @@ html_content = """<!DOCTYPE html>
         button:disabled {
             background-color: #95a5a6;
             cursor: not-allowed;
-            transform: none;
         }
 
         /* Tela do Jogo */
         #game-screen {
             background-color: #111;
-            display: none;
             flex-direction: column;
-        }
-
-        #game-screen.active {
-            display: flex;
         }
 
         .header {
@@ -132,16 +123,13 @@ html_content = """<!DOCTYPE html>
             padding: 0 20px;
             font-size: 1.2rem;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             z-index: 10;
         }
 
-        .progress {
-            color: var(--accent);
-            font-size: 1.5rem;
-        }
+        .progress { color: var(--accent); font-size: 1.5rem; }
 
-        .image-container {
+        /* Novo Container para corrigir o alinhamento */
+        .game-area {
             position: relative;
             flex-grow: 1;
             width: 100%;
@@ -151,15 +139,18 @@ html_content = """<!DOCTYPE html>
             overflow: hidden;
         }
 
-        #main-img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            cursor: crosshair;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        #interactive-wrapper {
+            position: relative;
+            display: inline-block;
         }
 
-        /* Marcadores Visuais (Círculos Verdes) */
+        #main-img {
+            max-width: 100vw;
+            max-height: calc(100vh - 60px); /* Subtrai a altura do cabeçalho */
+            display: block;
+            cursor: crosshair;
+        }
+
         .marker {
             position: absolute;
             border: 4px solid var(--secondary);
@@ -178,29 +169,18 @@ html_content = """<!DOCTYPE html>
         /* Modal */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.8);
             display: none;
-            justify-content: center;
-            align-items: center;
+            justify-content: center; align-items: center;
             z-index: 100;
         }
 
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
 
         .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 600px;
-            width: 90%;
-            text-align: center;
-            position: relative;
+            background: white; padding: 30px; border-radius: 12px;
+            max-width: 600px; width: 90%; text-align: center;
             animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
@@ -209,415 +189,171 @@ html_content = """<!DOCTYPE html>
             100% { transform: scale(1); opacity: 1; }
         }
 
-        .modal-content h2 {
-            color: var(--primary);
-            margin-bottom: 15px;
-            font-size: 1.8rem;
-        }
-
-        /* Container flexível para alinhar imagem e texto lado a lado em telas grandes */
-        .modal-body {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            text-align: left;
-            margin-bottom: 25px;
-        }
-
+        .modal-body { display: flex; flex-direction: column; gap: 20px; text-align: left; margin-bottom: 25px; }
+        
         @media(min-width: 600px) {
-            .modal-body {
-                flex-direction: row;
-                align-items: flex-start;
-            }
+            .modal-body { flex-direction: row; align-items: flex-start; }
         }
 
         .modal-image-wrapper {
-            flex-shrink: 0;
-            width: 200px;
-            height: 200px;
-            border-radius: 8px;
-            border: 3px solid var(--accent);
-            overflow: hidden;
-            margin: 0 auto;
-            background-image: url('image.png');
-            background-size: 500%; /* Dá o efeito de zoom */
-            background-repeat: no-repeat;
-        }
-
-        .modal-text {
-            flex-grow: 1;
-        }
-
-        .modal-text p {
-            margin-bottom: 15px;
-            font-size: 1.05rem;
-            line-height: 1.5;
+            flex-shrink: 0; width: 200px; height: 200px; border-radius: 8px;
+            border: 3px solid var(--accent); margin: 0 auto;
+            background-image: url('image.png'); background-size: 500%; background-repeat: no-repeat;
         }
 
         .problem-title { color: #c0392b; font-weight: bold; }
         .solution-title { color: var(--secondary); font-weight: bold; }
 
         /* Tela Final */
-        #end-screen {
-            background: var(--bg);
-            padding: 40px;
-            overflow-y: auto;
-            justify-content: flex-start;
-        }
-
-        #end-screen.active {
-            display: flex;
-        }
-
-        .end-header {
-            text-align: center;
-            margin-bottom: 30px;
-            margin-top: 20px;
-        }
-
-        .end-header h1 {
-            color: var(--secondary);
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-
+        #end-screen { background: var(--bg); padding: 40px; overflow-y: auto; justify-content: flex-start; }
+        .end-header { text-align: center; margin-bottom: 30px; margin-top: 20px; }
+        .end-header h1 { color: var(--secondary); font-size: 3rem; margin-bottom: 10px; }
         .motivation {
-            font-size: 1.5rem;
-            font-style: italic;
-            color: var(--primary);
-            margin-bottom: 20px;
-            padding: 20px;
-            background: white;
-            border-left: 5px solid var(--accent);
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 1.5rem; font-style: italic; color: var(--primary);
+            margin-bottom: 20px; padding: 20px; background: white;
+            border-left: 5px solid var(--accent); border-radius: 8px;
         }
-
         .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-            margin-bottom: 40px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px; width: 100%; max-width: 1200px; margin-bottom: 40px;
         }
-
-        .summary-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-top: 4px solid var(--primary);
-        }
-
-        .summary-card h3 {
-            color: var(--primary);
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-        }
-
-        .summary-card p {
-            font-size: 0.95rem;
-            margin-bottom: 10px;
-            line-height: 1.4;
-        }
-
-        .stats {
-            margin-top: 20px;
-            font-size: 1.2rem;
-            color: #7f8c8d;
-            text-align: center;
-            padding-bottom: 40px;
-        }
-
-        .stats span {
-            font-weight: bold;
-            color: var(--primary);
-        }
-
+        .summary-card { background: white; padding: 20px; border-radius: 10px; border-top: 4px solid var(--primary); }
     </style>
 </head>
 <body>
 
-    <!-- TELA INICIAL -->
     <div id="start-screen" class="screen active">
         <div class="title-box">
             <h1>Desafio: Eficiência Energética</h1>
-            <p class="instructions">
-                A indústria abaixo possui <strong>6 oportunidades</strong> de melhoria em eficiência energética.<br><br>
-                Sua missão é inspecionar o ambiente e clicar nos locais onde há desperdício de energia ou configurações inadequadas.
-            </p>
-            <input type="text" id="player-name" placeholder="Digite seu nome para começar..." autocomplete="off">
+            <p class="instructions">Sua missão é inspecionar o ambiente e clicar nos <strong>6 locais</strong> onde há desperdício de energia.</p>
+            <input type="text" id="player-name" placeholder="Digite seu nome..." autocomplete="off">
             <button id="btn-start" disabled>JOGAR AGORA</button>
         </div>
     </div>
 
-    <!-- TELA DO JOGO -->
     <div id="game-screen" class="screen">
         <div class="header">
             <div id="player-display">Operador: <span></span></div>
-            <div>Oportunidades Encontradas: <span class="progress"><span id="found-count">0</span> / 6</span></div>
+            <div>Oportunidades: <span class="progress"><span id="found-count">0</span> / 6</span></div>
         </div>
-        <div class="image-container" id="image-container">
-            <!-- A imagem principal (substitua 'image.png' se necessário) -->
-            <img src="image.png" id="main-img" alt="Ambiente Industrial">
+        <div class="game-area">
+            <!-- Camada interativa que resolve o problema de alinhamento -->
+            <div id="interactive-wrapper">
+                <img src="image.png" id="main-img" alt="Ambiente">
+            </div>
         </div>
     </div>
 
-    <!-- MODAL DE DESCOBERTA -->
     <div id="modal" class="modal-overlay">
         <div class="modal-content">
-            <h2 id="modal-title">Oportunidade Encontrada!</h2>
+            <h2 id="modal-title">Oportunidade!</h2>
             <div class="modal-body">
-                <!-- Wrapper que usa a própria imagem com background-position para dar zoom, 
-                     pode ser alterado depois para uma tag <img> se usar fotos separadas -->
                 <div class="modal-image-wrapper" id="modal-img-wrapper"></div>
                 <div class="modal-text">
                     <p><span class="problem-title">Problema:</span> <span id="modal-problem"></span></p>
                     <p><span class="solution-title">Solução:</span> <span id="modal-solution"></span></p>
                 </div>
             </div>
-            <button id="btn-continue">Continuar Explorando</button>
+            <button id="btn-continue">Continuar</button>
         </div>
     </div>
 
-    <!-- TELA FINAL -->
     <div id="end-screen" class="screen">
         <div class="end-header">
             <h1>Parabéns, <span id="end-player-name"></span>!</h1>
-            <p style="font-size: 1.2rem; color: #555;">Você encontrou todas as oportunidades de melhoria.</p>
         </div>
-        
-        <div class="motivation">
-            "A eficiência energética não é apenas sobre reduzir custos, mas sobre otimizar recursos, proteger o meio ambiente e construir uma indústria inteligente e sustentável para o futuro."
-        </div>
-
-        <div class="summary-grid" id="summary-grid">
-            <!-- Cards de resumo serão injetados via JS -->
-        </div>
-
+        <div class="motivation">"A eficiência energética otimiza recursos e constrói uma indústria sustentável."</div>
+        <div class="summary-grid" id="summary-grid"></div>
         <button onclick="location.reload()">Jogar Novamente</button>
-
-        <div class="stats">
-            <br>
-            Pessoas que já completaram o desafio: <span id="global-counter">Carregando...</span>
-        </div>
     </div>
 
-    <!-- SCRIPTS DO JOGO -->
     <script>
-        // Configuração dos 6 pontos (Coordenadas X e Y em porcentagem em relação à imagem)
-        // Raio (r) em porcentagem de tolerância do clique.
+        // Aumentamos consideravelmente o valor de 'r' (raio de clique) para cobrir os objetos inteiros.
         const hotspots = [
-            {
-                id: 1,
-                title: "Vazamento de Ar Comprimido",
-                x: 21, y: 28, r: 6,
-                problem: "Há vapor/ar escapando de uma junção da tubulação amarela suspensa, configurando um vazamento crítico.",
-                solution: "Realizar manutenção preventiva, trocar vedações e tubos danificados para eliminar a perda de pressão e desperdício de energia do compressor.",
-                bgPos: "15% 25%", // Coordenada CSS para o zoom na imagem principal
-                customImg: "foto1.jpg" // Nome do arquivo caso o cliente envie depois
-            },
-            {
-                id: 2,
-                title: "Ar-Condicionado Acima do Forno",
-                x: 69, y: 14, r: 6,
-                problem: "O aparelho de ar condicionado está instalado exatamente acima da estação de forno industrial, uma forte fonte de calor.",
-                solution: "Reposicionar o aparelho para longe de fontes diretas de calor para evitar o esforço excessivo e altíssimo consumo energético do compressor.",
-                bgPos: "75% 8%",
-                customImg: "foto2.jpg"
-            },
-            {
-                id: 3,
-                title: "Exaustor Obstruído",
-                x: 91, y: 22, r: 6,
-                problem: "O sistema de ventilação/exaustor está bloqueado por caixas de papelão empilhadas e desorganizadas.",
-                solution: "Desobstruir a área ao redor dos ventiladores e exaustores para garantir o fluxo de ar adequado e a eficiência térmica do motor.",
-                bgPos: "100% 15%",
-                customImg: "foto3.jpg"
-            },
-            {
-                id: 4,
-                title: "Iluminação em Área Ociosa",
-                x: 42, y: 8, r: 8,
-                problem: "Lâmpadas acesas com forte intensidade em locais sem operadores ativos ou perto de áreas iluminadas naturalmente.",
-                solution: "Instalar sensores de presença, dimerização ou adotar políticas de desligamento de luzes em zonas ociosas.",
-                bgPos: "40% 5%",
-                customImg: "foto4.jpg"
-            },
-            {
-                id: 5,
-                title: "Painel Elétrico sem Isolamento",
-                x: 89, y: 47, r: 6,
-                problem: "Fios e conexões descobertas no painel elétrico aberto, indicando possíveis pontos quentes e fugas.",
-                solution: "Organizar o cabeamento, realizar termografia para corrigir pontos quentes e vedar o painel, evitando perdas elétricas e riscos de curto-circuito.",
-                bgPos: "100% 50%",
-                customImg: "foto5.jpg"
-            },
-            {
-                id: 6,
-                title: "Porta de Carga Aberta",
-                x: 57, y: 27, r: 6,
-                problem: "A porta dos fundos/cais está totalmente aberta sem barreira, permitindo a entrada de calor externo e sobrecarregando a climatização.",
-                solution: "Instalar portas automáticas de fechamento rápido ou cortinas de ar para manter a climatização interna estável.",
-                bgPos: "58% 25%",
-                customImg: "foto6.jpg"
-            }
+            { id: 1, title: "Vazamento de Ar Comprimido", x: 21, y: 28, r: 12, problem: "Vapor/ar escapando da tubulação amarela.", solution: "Manutenção preventiva e troca de vedações.", bgPos: "15% 25%" },
+            { id: 2, title: "Ar-Condicionado Acima do Forno", x: 69, y: 14, r: 12, problem: "Ar condicionado sobre fonte extrema de calor.", solution: "Reposicionar o aparelho.", bgPos: "75% 8%" },
+            { id: 3, title: "Exaustor Obstruído", x: 91, y: 22, r: 12, problem: "Ventilação bloqueada por caixas.", solution: "Desobstruir a área.", bgPos: "100% 15%" },
+            { id: 4, title: "Iluminação Desnecessária", x: 42, y: 8, r: 15, problem: "Lâmpadas acesas em áreas ociosas.", solution: "Instalar sensores de presença.", bgPos: "40% 5%" },
+            { id: 5, title: "Painel Elétrico sem Isolamento", x: 89, y: 47, r: 12, problem: "Conexões expostas e pontos quentes.", solution: "Organizar cabeamento e vedar painel.", bgPos: "100% 50%" },
+            { id: 6, title: "Porta de Carga Aberta", x: 57, y: 27, r: 14, problem: "Entrada de calor externo sobrecarregando a climatização.", solution: "Instalar cortinas de ar.", bgPos: "58% 25%" }
         ];
 
-        let playerName = "";
         let foundItems = [];
-        
-        // Elementos DOM
-        const inputName = document.getElementById('player-name');
-        const btnStart = document.getElementById('btn-start');
-        const screenStart = document.getElementById('start-screen');
-        const screenGame = document.getElementById('game-screen');
-        const screenEnd = document.getElementById('end-screen');
+        const interactiveWrapper = document.getElementById('interactive-wrapper');
         const mainImg = document.getElementById('main-img');
-        const imgContainer = document.getElementById('image-container');
-        
-        // Modal
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalProblem = document.getElementById('modal-problem');
-        const modalSolution = document.getElementById('modal-solution');
-        const modalImgWrapper = document.getElementById('modal-img-wrapper');
-        const btnContinue = document.getElementById('btn-continue');
 
-        // Validação de nome
-        inputName.addEventListener('input', (e) => {
-            btnStart.disabled = e.target.value.trim().length < 2;
+        document.getElementById('player-name').addEventListener('input', (e) => {
+            document.getElementById('btn-start').disabled = e.target.value.trim().length < 2;
         });
 
-        // Iniciar Jogo
-        btnStart.addEventListener('click', () => {
-            playerName = inputName.value.trim();
-            document.querySelector('#player-display span').innerText = playerName;
-            document.getElementById('end-player-name').innerText = playerName;
-            
-            screenStart.classList.remove('active');
-            screenGame.classList.add('active');
+        document.getElementById('btn-start').addEventListener('click', () => {
+            const name = document.getElementById('player-name').value;
+            document.querySelector('#player-display span').innerText = name;
+            document.getElementById('end-player-name').innerText = name;
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
         });
 
-        // Clique na Imagem Principal
-        mainImg.addEventListener('click', (e) => {
-            // Calcular posição X e Y do clique em %
-            const rect = mainImg.getBoundingClientRect();
+        // O clique agora é registrado no wrapper, que tem o exato tamanho da imagem
+        interactiveWrapper.addEventListener('click', (e) => {
+            const rect = interactiveWrapper.getBoundingClientRect();
+            // Calcula as coordenadas em % estritamente em cima da imagem renderizada
             const clickX = ((e.clientX - rect.left) / rect.width) * 100;
             const clickY = ((e.clientY - rect.top) / rect.height) * 100;
 
-            checkHotspot(clickX, clickY, rect);
-        });
-
-        function checkHotspot(x, y, rect) {
             for (let point of hotspots) {
-                if (foundItems.includes(point.id)) continue; // Já encontrou este
-
-                // Cálculo de distância simples (Teorema de Pitágoras adaptado para %)
-                // Ajustamos a proporção baseada na proporção da imagem na tela para não achatar o raio
+                if (foundItems.includes(point.id)) continue;
+                
+                // Distância simples em percentual
                 const ratio = rect.width / rect.height;
-                const dx = (x - point.x) * ratio; // Ajuste de aspecto
-                const dy = (y - point.y);
+                const dx = (clickX - point.x) * ratio; 
+                const dy = (clickY - point.y);
                 const distance = Math.sqrt(dx*dx + dy*dy);
 
                 if (distance <= point.r) {
-                    markFound(point, rect);
+                    foundItems.push(point.id);
+                    
+                    const marker = document.createElement('div');
+                    marker.className = 'marker';
+                    marker.style.left = point.x + '%';
+                    marker.style.top = point.y + '%';
+                    
+                    // Tamanho do marcador adaptativo
+                    const markerSize = Math.max(50, rect.width * (point.r * 2 / 100) * 0.5); 
+                    marker.style.width = markerSize + 'px';
+                    marker.style.height = markerSize + 'px';
+                    
+                    interactiveWrapper.appendChild(marker);
+                    document.getElementById('found-count').innerText = foundItems.length;
+                    
+                    showModal(point);
                     return;
                 }
             }
-        }
-
-        function markFound(point, rect) {
-            foundItems.push(point.id);
-            
-            // Criar Marcador Verde na tela
-            const marker = document.createElement('div');
-            marker.className = 'marker';
-            
-            // Posicionar exatamente onde é o centro do hotspot
-            marker.style.left = point.x + '%';
-            marker.style.top = point.y + '%';
-            
-            // O tamanho do marcador pode ser fixo ou baseado no tamanho da tela
-            const markerSize = Math.max(40, rect.width * (point.r * 2 / 100) * 0.5); 
-            marker.style.width = markerSize + 'px';
-            marker.style.height = markerSize + 'px';
-            
-            // Anexar não ao img, mas ao container que envolve a img (que tem position relative)
-            // Precisamos calcular a posição real baseada no tamanho da img dentro do container
-            // Para simplificar e garantir precisão, a img está 100% adaptada, então as % funcionam
-            imgContainer.appendChild(marker);
-
-            // Atualizar Contador
-            document.getElementById('found-count').innerText = foundItems.length;
-
-            // Abrir Modal
-            showModal(point);
-        }
-
-        function showModal(point) {
-            modalTitle.innerText = point.title;
-            modalProblem.innerText = point.problem;
-            modalSolution.innerText = point.solution;
-            
-            /* Lógica para as imagens: 
-               Atualmente usa um recorte via CSS background-position da imagem principal (image.png).
-               Se você subir fotos separadas futuramente, você pode alterar o código abaixo para:
-               modalImgWrapper.style.backgroundImage = `url('${point.customImg}')`;
-               modalImgWrapper.style.backgroundSize = 'cover';
-               modalImgWrapper.style.backgroundPosition = 'center';
-            */
-            modalImgWrapper.style.backgroundPosition = point.bgPos;
-
-            modal.classList.add('active');
-        }
-
-        btnContinue.addEventListener('click', () => {
-            modal.classList.remove('active');
-            
-            // Verifica se terminou
-            if (foundItems.length === hotspots.length) {
-                setTimeout(endGame, 500); // pequeno delay
-            }
         });
 
-        function endGame() {
-            screenGame.classList.remove('active');
-            screenEnd.classList.add('active');
-
-            // Gerar Resumo
-            const grid = document.getElementById('summary-grid');
-            grid.innerHTML = '';
-            
-            hotspots.forEach(pt => {
-                const card = document.createElement('div');
-                card.className = 'summary-card';
-                card.innerHTML = `
-                    <h3>${pt.title}</h3>
-                    <p><strong>Problema:</strong> ${pt.problem}</p>
-                    <p><strong>Solução:</strong> ${pt.solution}</p>
-                `;
-                grid.appendChild(card);
-            });
-
-            // Registrar Jogador Global (Usando API gratuita CounterAPI)
-            // Usamos um namespace único "energia_ind_game" e key "plays"
-            fetch('https://api.counterapi.dev/v1/energia_ind_game/plays/up')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('global-counter').innerText = data.count;
-                })
-                .catch(err => {
-                    document.getElementById('global-counter').innerText = "Indisponível no momento";
-                });
+        function showModal(point) {
+            document.getElementById('modal-title').innerText = point.title;
+            document.getElementById('modal-problem').innerText = point.problem;
+            document.getElementById('modal-solution').innerText = point.solution;
+            document.getElementById('modal-img-wrapper').style.backgroundPosition = point.bgPos;
+            document.getElementById('modal').classList.add('active');
         }
+
+        document.getElementById('btn-continue').addEventListener('click', () => {
+            document.getElementById('modal').classList.remove('active');
+            if (foundItems.length === hotspots.length) {
+                setTimeout(() => {
+                    document.getElementById('game-screen').classList.remove('active');
+                    document.getElementById('end-screen').classList.add('active');
+                    
+                    const grid = document.getElementById('summary-grid');
+                    hotspots.forEach(pt => {
+                        grid.innerHTML += `<div class="summary-card"><h3>${pt.title}</h3><p><strong>Problema:</strong> ${pt.problem}</p><p><strong>Solução:</strong> ${pt.solution}</p></div>`;
+                    });
+                }, 500);
+            }
+        });
     </script>
 </body>
 </html>
-"""
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
-
-print("File index.html generated.")
