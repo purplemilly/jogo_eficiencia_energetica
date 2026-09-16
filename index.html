@@ -214,8 +214,8 @@
             background-image: url('image.png'); background-size: 500%; background-repeat: no-repeat;
         }
 
-        .problem-title { color: #c0392b; font-weight: bold; }
-        .solution-title { color: var(--secondary); font-weight: bold; }
+        .problem-title {  color: #c0392b; font-weight: bold; }
+        .solution-title {  margin-bottom: 10px; color: var(--secondary); font-weight: bold; }
 
         /* Tela Final e Layout do Resumo com Imagem */
         #end-screen { background: var(--bg); padding: 40px; overflow-y: auto; justify-content: flex-start; }
@@ -331,9 +331,9 @@
         const hotspots = [
             { 
                 id: 1, x: 21, y: 28, r: 12, bgPos: "15% 25%", customImg: "foto1.jpg",
-                title: "Vazamento de Ar Comprimido (Tubulação Amarela)", 
-                problem: "Localizado na parte centro-esquerda da imagem, onde há vapor/ar escapando de uma junção da tubulação amarela suspensa.", 
-                solution: "Realizar manutenção preventiva, trocar vedações e tubos danificados para eliminar a perda de pressão." 
+                title: "Vazamento de Ar Comprimido", 
+                problem: "Há vazamento de ar comprimido em uma junção da tubulação amarela suspensa.", 
+                solution: "Realizar manutenção preventiva, trocar vedações e tubos danificados para eliminar o vazamento." 
             },
             { 
                 id: 2, x: 69, y: 14, r: 12, bgPos: "75% 8%", customImg: "foto2.jpg",
@@ -344,7 +344,7 @@
             { 
                 id: 3, x: 91, y: 22, r: 12, bgPos: "100% 15%", customImg: "foto3.jpg",
                 title: "Motor/Ventilação Obstruída (Exaustor)", 
-                problem: "Localizado no canto superior direito, o exautor está bloqueado por caixas empilhadas e desorganizadas.", 
+                problem: "O exaustor está bloqueado por caixas empilhadas.", 
                 solution: "Desobstruir a área ao redor dos ventiladores e exaustores para garantir o fluxo de ar adequado e eficiência térmica do motor." 
             },
             { 
@@ -355,8 +355,8 @@
             },
             { 
                 id: 5, x: 89, y: 47, r: 12, bgPos: "100% 50%", customImg: "foto5.jpg",
-                title: "Painel Elétrico sem proteção / Ponto quente nos contatores", 
-                problem: "Quadro elétrico desorganizado, sem proteção e pontos quentes nos disjuntores e contatores.", 
+                title: "Painel elétrico sem proteção / Ponto quente", 
+                problem: "Quadro elétrico desorganizado, sem proteção e com pontos quentes nos disjuntores e contatores.", 
                 solution: "Organizar o cabeamento, corrigir pontos quentes e vedar painéis para evitar perdas elétricas e riscos de curto-circuito." 
             },
             { 
